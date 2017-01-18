@@ -1,0 +1,21 @@
+---
+- hosts: all
+  gather_facts: yes
+  tasks:
+    - name: install common packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - bind-utils
+        - net-tools
+        - java
+
+- hosts: nginx
+  roles:
+    - nginx
+
+- hosts: haproxy
+  roles:
+    - haproxy
+...

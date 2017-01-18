@@ -1,0 +1,47 @@
+# {{ ansible_managed }}
+
+global
+ log         127.0.0.1 local2 {{ haproxy_loglevel_min }} alert
+ chroot      /var/lib/haproxy
+ pidfile     /var/run/haproxy.pid
+ maxconn     4000
+ user        {{ haproxy_user }}
+ group       {{ haproxy_group }}
+ daemon
+ stats socket /var/lib/haproxy/stats
+
+defaults
+ mode                    http
+ log                     global
+ option                  http-keep-alive
+ option                  httplog
+ option                  dontlognull
+ option                  forwardfor
+ option                  redispatch
+ retries                 1
+ timeout check           5s
+ timeout client          5s
+ timeout connect         5s
+ timeout http-request    6s
+ timeout http-keep-alive 6s
+ timeout queue           5s
+ timeout server          5s
+ stats enable
+ stats show-legends
+ stats refresh 30s
+ stats auth admin:admin
+ stats uri /haproxy?stats
+
+frontend {{ haproxy_frontend }}
+  bind *:8080
+  
+{% for ENTRY in haproxy_backend | sort %}
+  use_backend {{ ENTRY.name }}
+{% endfor %}
+
+{% for ENTRY in haproxy_backend | sort %}
+backend {{ ENTRY.name }}
+  balance roundrobin
+  option httpchk HEAD / HTTP/1.1\r\nHost:\ {{ ENTRY.host }}
+  server {{ ENTRY.host }} {{ ENTRY.host }}:{{ ENTRY.port }}
+{% endfor %}

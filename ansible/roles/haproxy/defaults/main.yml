@@ -1,0 +1,8 @@
+---
+haproxy_user: haproxy
+haproxy_group: haproxy
+haproxy_loglevel_min: notice
+haproxy_frontend: clearscore-in
+haproxy_backend:
+  - { name: clearscore-out, host: localhost, port: 9080 }
+...
